@@ -45,7 +45,7 @@ vec4 pointLight()
   float attenuation;
   vec3 E = normalize(eyeDirection);
   vec3 L = normalize(lightDir);
-  float lambertTerm = dot(N,L)*0.5;
+  float lambertTerm = dot(N,L);
   vec4 diffuse=vec4(0);
   vec4 ambient=vec4(0);
   vec4 specular=vec4(0);
@@ -78,6 +78,6 @@ void main ()
 {
     vec4 tmp=pointLight();
     tmp.a=alpha;
-fragColour=tmp;
+    fragColour=tmp;
 }
 
