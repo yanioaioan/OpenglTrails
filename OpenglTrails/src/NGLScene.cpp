@@ -26,7 +26,7 @@ NGLScene::NGLScene(QWindow *_parent) : OpenGLWindow(_parent)
   // mouse rotation values set to 0
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
-  setTitle("Qt5 Simple NGL Demo");
+  setTitle("Qt5 Obj Trails on SimpleNGL");
   timer=startTimer(20);
  
 }
@@ -62,8 +62,6 @@ void NGLScene::resizeEvent(QResizeEvent *_event )
 
 void NGLScene::initialize()
 {
-
-
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
   ngl::NGLInit::instance();
@@ -72,7 +70,7 @@ void NGLScene::initialize()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
+  glClearColor(0.5f, 0.5f, 0.5f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
@@ -107,13 +105,13 @@ void NGLScene::initialize()
   // and make it active ready to load values
   (*shader)["Phong"]->use();
   // the shader will use the currently active material and light0 so set them
-  ngl::Material m(ngl::GOLD);
+  ngl::Material m(ngl::COPPER);
   // load our material values to the shader into the structure material (see Vertex shader)
   m.loadToShader("material");
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,1,5);
+  ngl::Vec3 from(0,-2,5);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
@@ -135,6 +133,10 @@ void NGLScene::initialize()
   // set the viewport for openGL we need to take into account retina display
   // etc by using the pixel ratio as a multiplyer
   glViewport(0,0,width()*devicePixelRatio(),height()*devicePixelRatio());
+
+  // model downloaded from http://www.lugher3d.com/download/free-models-for-maya unknown artist
+  m_mesh = new ngl::Obj("models/tyre.obj");
+  m_mesh->createVAO();
 }
 
 
@@ -181,24 +183,28 @@ void NGLScene::render()
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
    // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+//  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
 
-  if(x>1)
-      tmp=-tmp;
-  if(x<0)
-      tmp=-tmp;
+    if(x>1)
+    {
+        tmp=-tmp;
+    }
+    if(x<0)
+    {
+        tmp=-tmp;
+    }
 
-  x+=tmp;
+    x+=tmp;
 
-  angle+=2;
-  x=cos(angle*(M_PI/180.0));
-  y=sin(angle*(M_PI/180.0));
+    angle+=2;
+    x=cos(angle*(M_PI/180.0));
+    y=sin(angle*(M_PI/180.0));
 
-  m_trans.setPosition(x,y,0);
-  shader->setShaderParam1f("alpha",1);
-   loadMatricesToShader();
-   prim->draw("teapot");
+    m_trans.setPosition(x,y,0);
+    shader->setShaderParam1f("alpha",1);
+    loadMatricesToShader();
+    m_mesh->draw();
 
 
       //Trailing Part
@@ -212,7 +218,8 @@ void NGLScene::render()
 
               shader->setShaderParam1f("alpha",x/(x*10));
               loadMatricesToShader();
-              prim->draw("teapot");
+//              prim->draw("teapot");
+              m_mesh->draw();
 
           }
 
