@@ -19,7 +19,7 @@ const static float INCREMENT=0.01f;
 //----------------------------------------------------------------------------------------------------------------------
 const static float ZOOM=0.1f;
 
-NGLScene::NGLScene(QWindow *_parent) : OpenGLWindow(_parent)
+NGLScene::NGLScene() /*: OpenGLWindow(_parent)*/
 {
   // re-size the widget to that of the parent (in this case the GLFrame passed in on construction)
   m_rotate=false;
@@ -27,6 +27,7 @@ NGLScene::NGLScene(QWindow *_parent) : OpenGLWindow(_parent)
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
   setTitle("Qt5 Obj Trails on SimpleNGL");
+
   timer=startTimer(20);
  
 }
@@ -37,30 +38,27 @@ NGLScene::~NGLScene()
   ngl::NGLInit *Init = ngl::NGLInit::instance();
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
   delete m_light;
-  Init->NGLQuit();
+//  Init->NGLQuit();
 }
 
 void NGLScene::timerEvent(QTimerEvent *_event)
 {
 
-    renderLater();
+    update();
 }
 
-void NGLScene::resizeEvent(QResizeEvent *_event )
+void NGLScene::resizeGL(int w, int h)
 {
-  if(isExposed())
-  {
   // set the viewport for openGL we need to take into account retina display
   // etc by using the pixel ratio as a multiplyer
-  glViewport(0,0,width()*devicePixelRatio(),height()*devicePixelRatio());
+  glViewport(0,0,w*devicePixelRatio(),h*devicePixelRatio());
   // now set the camera size values as the screen size has changed
   m_cam->setShape(45.0f,(float)width()/height(),0.05f,350.0f);
-  renderLater();
-  }
+  update();
 }
 
 
-void NGLScene::initialize()
+void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
@@ -160,7 +158,7 @@ void NGLScene::loadMatricesToShader()
 
 }
 
-void NGLScene::render()
+void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -201,13 +199,15 @@ void NGLScene::render()
     x=cos(angle*(M_PI/180.0));
     y=sin(angle*(M_PI/180.0));
 
+    std::cout<<x<<", "<<y<<std::endl;
+
     m_trans.setPosition(x,y,0);
     shader->setShaderParam1f("alpha",1);
     loadMatricesToShader();
     m_mesh->draw();
 
 
-      //Trailing Part
+      //Trailing Part / once it fills with 50 elements, it pops the last element and pushes a new one (having the new position) on the from
       trailArray.push_front(m_trans.getPosition());
 
 //      if(trailArray.size()==totaltrail)
@@ -223,12 +223,14 @@ void NGLScene::render()
 
           }
 
-          if(trailArray.size()==totaltrail && m_flagEnoughPushTimeToPop==false)//executed only till the trailArray is full once
+          if (trailArray.size()==totaltrail && m_flagEnoughPushTimeToPop==false)//executed only till the trailArray is full once
               m_flagEnoughPushTimeToPop=true;
 
-          //From now one discard the last added trail position
-          if(m_flagEnoughPushTimeToPop)
-              trailArray.pop_back();
+          //From now on discard the last added trail position to prevent exceeding the 50 elements and overflowing ram
+          if (m_flagEnoughPushTimeToPop)
+          {
+                trailArray.pop_back ();
+          }
       }
 
 
@@ -249,7 +251,7 @@ void NGLScene::mouseMoveEvent (QMouseEvent * _event)
     m_spinYFace += (float) 0.5f * diffx;
     m_origX = _event->x();
     m_origY = _event->y();
-    renderLater();
+    update();
 
   }
         // right mouse translate code
@@ -261,7 +263,7 @@ void NGLScene::mouseMoveEvent (QMouseEvent * _event)
     m_origYPos=_event->y();
     m_modelPos.m_x += INCREMENT * diffX;
     m_modelPos.m_y -= INCREMENT * diffY;
-    renderLater();
+    update();
 
    }
 }
@@ -317,7 +319,7 @@ void NGLScene::wheelEvent(QWheelEvent *_event)
 	{
 		m_modelPos.m_z-=ZOOM;
 	}
-	renderLater();
+    update();
 }
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -341,5 +343,5 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   }
   // finally update the GLWindow and re-draw
   //if (isExposed())
-    renderLater();
+    update();
 }

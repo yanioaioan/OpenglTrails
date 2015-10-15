@@ -21,15 +21,16 @@
 /// @brief our main glwindow widget for NGL applications all drawing elements are
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
+#include <QOpenGLWindow>
 
-class NGLScene : public OpenGLWindow
+class NGLScene : public QOpenGLWindow
 {
   public:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief ctor for our NGL drawing class
     /// @param [in] parent the parent window to the class
     //----------------------------------------------------------------------------------------------------------------------
-    NGLScene(QWindow *_parent=0);
+    NGLScene(/*QWindow *_parent=0*/);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief dtor must close down ngl and release OpenGL resources
     //----------------------------------------------------------------------------------------------------------------------
@@ -38,11 +39,11 @@ class NGLScene : public OpenGLWindow
     /// @brief the initialize class is called once when the window is created and we have a valid GL context
     /// use this to setup any default GL stuff
     //----------------------------------------------------------------------------------------------------------------------
-    void initialize();
+    void initializeGL();
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we want to draw the scene
     //----------------------------------------------------------------------------------------------------------------------
-    void render();
+    void paintGL();
 
 private:
     //----------------------------------------------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ private:
     /// @brief Qt Event called when the window is re-sized
     /// @param [in] _event the Qt event to query for size etc
     //----------------------------------------------------------------------------------------------------------------------
-    void resizeEvent(QResizeEvent *_event);
+    void resizeGL(int w, int h);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Qt Event called when a key is pressed
     /// @param [in] _event the Qt event to query for size etc
