@@ -26,7 +26,7 @@ NGLScene::NGLScene() /*: OpenGLWindow(_parent)*/
   // mouse rotation values set to 0
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
-  setTitle("Qt5 Obj Trails on SimpleNGL");
+  setTitle("Qt5 Obj OpenGL Trails on SimpleNGL");
 
   timer=startTimer(20);
  
